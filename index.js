@@ -5,6 +5,8 @@ const multerS3 = require('multer-s3');
 const cors = require('cors');
 const ejs = require('ejs');
 const app = express();
+const path = require('path');
+
 app.use(cors());
 
 AWS.config.update({
@@ -15,14 +17,15 @@ const s3 = new AWS.S3();
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // S3 upload configuration
 const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: 'cloud-internship-project3-s3',
-    acl: 'public-read',
     metadata: (req, file, cb) => cb(null, { fieldName: file.fieldname }),
     key: (req, file, cb) =>
       cb(null, Date.now().toString() + '-' + file.originalname),

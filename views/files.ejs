@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Files</title>
+  </head>
+  <body>
+    <h1>Uploaded Files</h1>
+    <ul>
+      <% files.forEach(file => { %>
+      <li>
+        <a href="<%= file.s3Url %>"><%= file.fileName %></a> - <%=
+        file.uploadDate %>
+      </li>
+      <% }); %>
+    </ul>
+  </body>
+</html>
