@@ -96,6 +96,7 @@ app.get('/files/:filename', async (req, res) => {
     const s3Params = {
       Bucket: 'cloud-internship-project3-s3',
       Key: s3Key,
+      ResponseContentDisposition: 'inline', // Change content disposition to inline
     };
 
     s3.getObject(s3Params, (err, data) => {
