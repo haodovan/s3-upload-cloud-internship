@@ -34,9 +34,10 @@ app.get('/', (req, res) => {
 });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
+  console.log(req.file);
   const fileData = {
     fileName: req.file.originalname,
-    s3Url: req.file.location,
+    s3Url: 's3://cloud-internship-project3-s3/' + req.file.originalname,
     uploadDate: new Date().toISOString(),
   };
 
