@@ -5,8 +5,6 @@ const multerS3 = require('multer-s3');
 const cors = require('cors');
 const ejs = require('ejs');
 const app = express();
-const path = require('path');
-
 app.use(cors());
 
 AWS.config.update({
@@ -17,9 +15,7 @@ const s3 = new AWS.S3();
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 // S3 upload configuration
 const upload = multer({
@@ -38,7 +34,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
-  console.log(req.file); // Log file details
   const fileData = {
     fileName: req.file.originalname,
     s3Url: req.file.location,
@@ -54,13 +49,13 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     await dynamoDB.put(params).promise();
     res.send(`File uploaded successfully! URL: ${req.file.location}`);
   } catch (error) {
-    console.error('Error saving to DynamoDB:', error); // Log error details
+    console.error('Error saving to DynamoDB:', error);
     res.status(500).send(`Error saving to DynamoDB: ${error.message}`);
   }
 });
 
 // List files
-app.get('/files', async (req, res) => {
+app.get('/', async (req, res) => {
   const params = {
     TableName: 'S3MetadataTable',
   };
