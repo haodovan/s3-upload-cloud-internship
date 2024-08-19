@@ -24,7 +24,7 @@
       (file.fileName && file.uploadDate) { %>
       <li>
         <a href="<%= file.s3Url %>" target="_blank"><%= file.fileName %></a> -
-        Uploaded on: <%= file.uploadDate %>
+        Uploaded on: <%= file.uploadDate %>, file: <%= file %>
       </li>
       <% } %> <% }) %> <% } else { %>
       <li>No files uploaded yet.</li>
