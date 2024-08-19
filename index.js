@@ -28,26 +28,17 @@ const upload = multer({
   }),
 });
 
-// Home page and List files
-app.get('/', async (req, res) => {
-  const params = {
-    TableName: 'S3MetadataTable',
-  };
-
-  try {
-    const data = await dynamoDB.scan(params).promise();
-    res.render('index', { files: data.Items });
-  } catch (error) {
-    res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
-  }
+// Home page
+app.get('/', (req, res) => {
+  res.render('index');
 });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
   console.log(req.file);
-
   const fileData = {
-    fileName: req.file.key, // Using key from S3 as fileName
-    s3Url: req.file.location, // Location of the uploaded file
+    key: req.file.originalname,
+    fileName: req.file.originalname,
+    s3Url: 's3://cloud-internship-project3-s3/' + req.file.originalname,
     uploadDate: new Date().toISOString(),
   };
 
@@ -62,6 +53,20 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   } catch (error) {
     console.error('Error saving to DynamoDB:', error);
     res.status(500).send(`Error saving to DynamoDB: ${error.message}`);
+  }
+});
+
+// List files
+app.get('/', async (req, res) => {
+  const params = {
+    TableName: 'S3MetadataTable',
+  };
+
+  try {
+    const data = await dynamoDB.scan(params).promise();
+    res.render('files', { files: data.Items });
+  } catch (error) {
+    res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
   }
 });
 
