@@ -6,6 +6,11 @@ const cors = require('cors');
 const ejs = require('ejs');
 const app = express();
 app.use(cors());
+
+AWS.config.update({
+  region: 'ap-northeast-1',
+});
+
 const s3 = new AWS.S3();
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
@@ -29,8 +34,8 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-// Upload file
 app.post('/upload', upload.single('file'), async (req, res) => {
+  console.log(req.file); // Log file details
   const fileData = {
     fileName: req.file.originalname,
     s3Url: req.file.location,
@@ -46,6 +51,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     await dynamoDB.put(params).promise();
     res.send(`File uploaded successfully! URL: ${req.file.location}`);
   } catch (error) {
+    console.error('Error saving to DynamoDB:', error); // Log error details
     res.status(500).send(`Error saving to DynamoDB: ${error.message}`);
   }
 });
