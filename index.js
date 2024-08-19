@@ -57,7 +57,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 // List files
-app.get('/', async (req, res) => {
+app.get('/files', async (req, res) => {
   const params = {
     TableName: 'S3MetadataTable',
   };
