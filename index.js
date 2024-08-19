@@ -90,7 +90,7 @@ app.get('/files/:filename', async (req, res) => {
     }
 
     // Extract S3 key from DynamoDB data
-    const s3Key = data.Item.key;
+    const s3Key = data.Item.originalname;
 
     // Get the file from S3
     const s3Params = {
