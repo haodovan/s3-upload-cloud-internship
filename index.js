@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const cors = require('cors');
-
+const ejs = require('ejs');
 const app = express();
 app.use(cors());
 const s3 = new AWS.S3();
