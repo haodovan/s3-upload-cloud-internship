@@ -64,4 +64,4 @@ app.get('/files', async (req, res) => {
   }
 });
 
-app.listen(80, () => console.log('Server running on port 80'));
+app.listen(3000, '0.0.0.0', () => console.log('Server running on port 3000'));
