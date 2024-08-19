@@ -76,9 +76,7 @@ app.get('/files/:filename', async (req, res) => {
   // Query DynamoDB to get file info
   const params = {
     TableName: 'S3MetadataTable',
-    Key: {
-      filename: filename, // Ensure this matches the partition key
-    },
+    Key: { filename: filename },
   };
 
   try {
@@ -89,17 +87,17 @@ app.get('/files/:filename', async (req, res) => {
     }
 
     // Extract S3 key from DynamoDB data
-    const s3Uri = data.Item.s3Uri;
-    const s3Key = s3Uri.split('/').pop(); // Extract file key from S3 URI
+    const s3Key = data.Item.s3Uri.split('/').pop();
 
-    // Get the file from S3
-    const s3Params = {
+    // Generate a pre-signed URL
+    const urlParams = {
       Bucket: 'cloud-internship-project3-s3',
       Key: s3Key,
+      Expires: 60, // URL valid for 60 seconds
     };
 
-    const fileStream = s3.getObject(s3Params).createReadStream();
-    fileStream.pipe(res);
+    const signedUrl = s3.getSignedUrl('getObject', urlParams);
+    res.redirect(signedUrl);
   } catch (error) {
     console.error('Error fetching file information:', error);
     res.status(500).send(`Error fetching file information: ${error.message}`);
