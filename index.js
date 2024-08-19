@@ -23,8 +23,7 @@ const upload = multer({
     s3: s3,
     bucket: 'cloud-internship-project3-s3',
     metadata: (req, file, cb) => cb(null, { fieldName: file.fieldname }),
-    key: (req, file, cb) =>
-      cb(null, Date.now().toString() + '-' + file.originalname),
+    key: (req, file, cb) => cb(null, file.originalname),
   }),
 });
 
@@ -36,7 +35,7 @@ app.get('/', (req, res) => {
 app.post('/upload', upload.single('file'), async (req, res) => {
   console.log(req.file);
   const fileData = {
-    key: req.file.key,
+    key: req.file.originalname,
     fileName: req.file.originalname,
     s3Url: req.file.location,
     uploadDate: new Date().toISOString(),
