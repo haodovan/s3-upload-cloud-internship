@@ -36,7 +36,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   };
 
   const params = {
-    TableName: 'your-dynamodb-table', // Sử dụng tên DynamoDB table cụ thể của bạn
+    TableName: 'S3MetadataTable',
     Item: fileData,
   };
 
@@ -51,7 +51,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 // List files
 app.get('/files', async (req, res) => {
   const params = {
-    TableName: 'your-dynamodb-table', // Sử dụng tên DynamoDB table cụ thể của bạn
+    TableName: 'S3MetadataTable',
   };
 
   try {
