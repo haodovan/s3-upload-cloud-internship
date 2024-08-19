@@ -42,6 +42,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     uploadDate: new Date().toISOString(),
   };
 
+  console.log('File data to be saved:', fileData);
+
   const params = {
     TableName: 'S3MetadataTable',
     Item: fileData,
