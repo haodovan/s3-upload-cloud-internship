@@ -70,14 +70,14 @@ app.get('/files', async (req, res) => {
   }
 });
 
-app.get('/files/:fileName', async (req, res) => {
-  const fileName = req.params.fileName;
+app.get('/files/:filename', async (req, res) => {
+  const filename = req.params.filename;
 
   // Query DynamoDB to get file info
   const params = {
     TableName: 'S3MetadataTable',
     Key: {
-      fileName: fileName,
+      filename: filename, // Ensure this matches the partition key
     },
   };
 
@@ -88,11 +88,9 @@ app.get('/files/:fileName', async (req, res) => {
       return res.status(404).send('File not found in DynamoDB');
     }
 
-    // Extract S3 URL or key from DynamoDB data
-    const s3Key = data.Item.s3Url.replace(
-      `https://cloud-internship-project3-s3.s3.ap-northeast-1.amazonaws.com/`,
-      ''
-    );
+    // Extract S3 key from DynamoDB data
+    const s3Uri = data.Item.s3Uri;
+    const s3Key = s3Uri.split('/').pop(); // Extract file key from S3 URI
 
     // Get the file from S3
     const s3Params = {
