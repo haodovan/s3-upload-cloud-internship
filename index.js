@@ -73,17 +73,38 @@ app.get('/files', async (req, res) => {
 app.get('/files/:fileName', async (req, res) => {
   const fileName = req.params.fileName;
 
+  // Query DynamoDB to get file info
   const params = {
-    Bucket: 'cloud-internship-project3-s3',
-    Key: fileName,
+    TableName: 'S3MetadataTable',
+    Key: {
+      fileName: fileName,
+    },
   };
 
   try {
-    const fileStream = s3.getObject(params).createReadStream();
+    const data = await dynamoDB.get(params).promise();
+
+    if (!data.Item) {
+      return res.status(404).send('File not found in DynamoDB');
+    }
+
+    // Extract S3 URL or key from DynamoDB data
+    const s3Key = data.Item.s3Url.replace(
+      `https://cloud-internship-project3-s3.s3.ap-northeast-1.amazonaws.com/`,
+      ''
+    );
+
+    // Get the file from S3
+    const s3Params = {
+      Bucket: 'cloud-internship-project3-s3',
+      Key: s3Key,
+    };
+
+    const fileStream = s3.getObject(s3Params).createReadStream();
     fileStream.pipe(res);
   } catch (error) {
-    console.error('Error fetching file from S3:', error);
-    res.status(500).send(`Error fetching file from S3: ${error.message}`);
+    console.error('Error fetching file information:', error);
+    res.status(500).send(`Error fetching file information: ${error.message}`);
   }
 });
 
