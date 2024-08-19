@@ -42,8 +42,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     uploadDate: new Date().toISOString(),
   };
 
-  console.log('File data to be saved:', fileData);
-
   const params = {
     TableName: 'S3MetadataTable',
     Item: fileData,
@@ -69,6 +67,23 @@ app.get('/files', async (req, res) => {
     res.render('index', { files: data.Items });
   } catch (error) {
     res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
+  }
+});
+
+app.get('/files/:fileName', async (req, res) => {
+  const fileName = req.params.fileName;
+
+  const params = {
+    Bucket: 'cloud-internship-project3-s3',
+    Key: fileName,
+  };
+
+  try {
+    const fileStream = s3.getObject(params).createReadStream();
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error fetching file from S3:', error);
+    res.status(500).send(`Error fetching file from S3: ${error.message}`);
   }
 });
 
