@@ -38,7 +38,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   const fileData = {
     key: req.file.originalname,
     fileName: req.file.originalname,
-    s3Url: 's3://cloud-internship-project3-s3/' + req.file.originalname,
+    s3Url: req.file.location,
     uploadDate: new Date().toISOString(),
   };
 
@@ -70,13 +70,16 @@ app.get('/files', async (req, res) => {
   }
 });
 
+// Serve the file content
 app.get('/files/:filename', async (req, res) => {
   const filename = req.params.filename;
 
   // Query DynamoDB to get file info
   const params = {
     TableName: 'S3MetadataTable',
-    Key: { filename: filename },
+    Key: {
+      key: filename, // Ensure this matches the partition key
+    },
   };
 
   try {
@@ -87,17 +90,26 @@ app.get('/files/:filename', async (req, res) => {
     }
 
     // Extract S3 key from DynamoDB data
-    const s3Key = data.Item.s3Uri.split('/').pop();
+    const s3Key = data.Item.key;
 
-    // Generate a pre-signed URL
-    const urlParams = {
+    // Get the file from S3
+    const s3Params = {
       Bucket: 'cloud-internship-project3-s3',
       Key: s3Key,
-      Expires: 60, // URL valid for 60 seconds
     };
 
-    const signedUrl = s3.getSignedUrl('getObject', urlParams);
-    res.redirect(signedUrl);
+    s3.getObject(s3Params, (err, data) => {
+      if (err) {
+        console.error('Error fetching file from S3:', err);
+        return res
+          .status(500)
+          .send(`Error fetching file from S3: ${err.message}`);
+      }
+
+      // Set content type based on the file type
+      res.setHeader('Content-Type', data.ContentType);
+      res.send(data.Body);
+    });
   } catch (error) {
     console.error('Error fetching file information:', error);
     res.status(500).send(`Error fetching file information: ${error.message}`);
