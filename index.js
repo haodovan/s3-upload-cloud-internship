@@ -88,9 +88,10 @@ app.get('/files/:filename', async (req, res) => {
     if (!data.Item) {
       return res.status(404).send('File not found in DynamoDB');
     }
+    console.log(data.Item);
 
     // Extract S3 key from DynamoDB data
-    const s3Key = data.Item.originalname;
+    const s3Key = data.Item.key;
 
     // Get the file from S3
     const s3Params = {
