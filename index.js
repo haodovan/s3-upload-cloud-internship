@@ -77,7 +77,7 @@ app.get('/files/:filename', async (req, res) => {
   const params = {
     TableName: 'S3MetadataTable',
     Key: {
-      key: filename, // Ensure this matches the partition key
+      key: filename,
     },
   };
 
@@ -117,4 +117,4 @@ app.get('/files/:filename', async (req, res) => {
   }
 });
 
-app.listen(3000, '0.0.0.0', () => console.log('Server running on port 3000'));
+app.listen(80, '0.0.0.0', () => console.log('Server running on port 80'));
