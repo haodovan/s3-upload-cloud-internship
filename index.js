@@ -29,7 +29,9 @@ const upload = multer({
 
 // Home page
 app.get('/', (req, res) => {
-  res.render('index');
+  const files = []; // Fetch or define your files array here
+
+  res.render('index', { files });
 });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
