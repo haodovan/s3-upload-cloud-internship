@@ -28,10 +28,17 @@ const upload = multer({
 });
 
 // Home page
-app.get('/', (req, res) => {
-  const files = []; // Fetch or define your files array here
+app.get('/', async (req, res) => {
+  const params = {
+    TableName: 'S3MetadataTable',
+  };
 
-  res.render('index', { files });
+  try {
+    const data = await dynamoDB.scan(params).promise();
+    res.render('index', { files: data.Items });
+  } catch (error) {
+    res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
+  }
 });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
