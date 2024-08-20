@@ -64,19 +64,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// List files
-app.get('/files', async (req, res) => {
-  const params = {
-    TableName: 'S3MetadataTable',
-  };
+// // List files
+// app.get('/files', async (req, res) => {
+//   const params = {
+//     TableName: 'S3MetadataTable',
+//   };
 
-  try {
-    const data = await dynamoDB.scan(params).promise();
-    res.render('index', { files: data.Items });
-  } catch (error) {
-    res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
-  }
-});
+//   try {
+//     const data = await dynamoDB.scan(params).promise();
+//     res.render('index', { files: data.Items });
+//   } catch (error) {
+//     res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
+//   }
+// });
 
 // Serve the file content
 app.get('/files/:filename', async (req, res) => {
