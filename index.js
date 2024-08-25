@@ -88,7 +88,7 @@ app.get('/files/:filename', async (req, res) => {
 
   try {
     const data = await dynamoDBClient.send(new GetCommand(params));
-
+    console.log(data);
     if (!data.Item) {
       return res.status(404).send('File not found in DynamoDB');
     }
