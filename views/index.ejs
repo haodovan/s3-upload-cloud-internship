@@ -27,7 +27,7 @@
         <a href="/files/<%= file.fileName %>" target="_blank"
           ><%= file.fileName %></a
         >
-        - Uploaded on: <%= new Date(file.uploadDate).toLocaleDateString() %>
+        - Uploaded on: <%= file.uploadDate %>
       </li>
       <% } %> <% }) %> <% } else { %>
       <li>No files uploaded yet.</li>
