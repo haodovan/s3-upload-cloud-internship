@@ -42,7 +42,8 @@ app.get('/', async (req, res) => {
 
   try {
     const data = await dynamoDBClient.send(new ScanCommand(params));
-    res.render('index', { files: data });
+    console.log('Retrieved data from DynamoDB:', data.Items);
+    res.render('index', { files: data.Items });
   } catch (error) {
     res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
   }
