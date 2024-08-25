@@ -1,9 +1,5 @@
 const express = require('express');
-const {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} = require('@aws-sdk/client-s3');
+const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const {
   DynamoDBClient,
   ScanCommand,
@@ -88,7 +84,7 @@ app.get('/files/:filename', async (req, res) => {
 
   try {
     const data = await dynamoDBClient.send(new GetCommand(params));
-    console.log(data);
+
     if (!data.Item) {
       return res.status(404).send('File not found in DynamoDB');
     }
