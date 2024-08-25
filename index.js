@@ -43,8 +43,22 @@ app.get('/', async (req, res) => {
   try {
     const data = await dynamoDBClient.send(new ScanCommand(params));
     console.log('Retrieved data from DynamoDB:', data.Items);
-    res.render('index', { files: data.Items });
+
+    // Convert DynamoDB data to a simpler format
+    const files = data.Items.map((item) => ({
+      filename: item.filename.S,
+      uploadTime: item.uploadTime.S,
+      s3Uri: item.s3Uri.S,
+      key: item.key.S,
+    }));
+
+    // Log converted files to check if data is correct
+    console.log('Converted files data:', files);
+
+    // Render the EJS template with the converted data
+    res.render('index', { files });
   } catch (error) {
+    console.error('Error retrieving from DynamoDB:', error);
     res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
   }
 });
