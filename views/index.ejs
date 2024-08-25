@@ -4,33 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>Upload File to S3</title>
+    <title>Uploaded Files</title>
   </head>
   <body>
-    <h1>Upload File to S3</h1>
-    <form
-      ref="uploadForm"
-      id="uploadForm"
-      action="/upload"
-      method="post"
-      enctype="multipart/form-data"
-    >
-      <input type="file" name="file" />
-      <input type="submit" value="Upload!" />
-    </form>
-
-    <h2>Uploaded Files</h2>
+    <h1>Uploaded Files</h1>
     <ul>
-      <% if (files && files.length > 0) { %> <% files.forEach(file => { %>
+      <% files.forEach(file => { %>
       <li>
-        <a href="/files/<%= file.key %>" target="_blank"
-          ><%= file.fileName %></a
-        >
-        - Uploaded on: <%= new Date(file.uploadDate).toLocaleDateString() %>
+        <a href="<%= file.s3Uri %>" target="_blank"><%= file.filename %></a>
+        - Uploaded on: <%= file.uploadTime %>
       </li>
-      <% }) %> <% } else { %>
-      <li>No files uploaded yet.</li>
-      <% } %>
+      <% }) %>
     </ul>
   </body>
 </html>
