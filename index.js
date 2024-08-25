@@ -27,6 +27,10 @@ const upload = multer({
   }),
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // Home page
 app.get('/', async (req, res) => {
   const params = {
