@@ -42,21 +42,21 @@ app.get('/', async (req, res) => {
 
   try {
     const data = await dynamoDBClient.send(new ScanCommand(params));
-    console.log('Raw DynamoDB data:', data); // Log raw data
+    console.log('Raw DynamoDB data:', data);
 
     // Check if data.Items is an array and has elements
     if (!data.Items || !Array.isArray(data.Items)) {
       throw new Error('Unexpected DynamoDB response structure');
     }
 
-    // Transform the data to a simpler format
+    // Transform and filter the data
     const files = data.Items.map((item) => ({
-      fileName: item.filename ? item.filename.S : 'Unknown',
-      uploadDate: item.uploadTime ? item.uploadTime.S : 'Unknown',
-      s3Uri: item.s3Uri ? item.s3Uri.S : 'Unknown',
-    }));
+      fileName: item.filename ? item.filename.S : null,
+      uploadDate: item.uploadTime ? item.uploadTime.S : null,
+      s3Uri: item.s3Uri ? item.s3Uri.S : null,
+    })).filter((file) => file.fileName && file.uploadDate && file.s3Uri); // Filter out items with null values
 
-    console.log('Transformed data:', files); // Log transformed data
+    console.log('Filtered data:', files);
     res.render('index', { files });
   } catch (error) {
     console.error('Error retrieving from DynamoDB:', error);
