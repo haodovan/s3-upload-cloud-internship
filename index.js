@@ -1,18 +1,25 @@
 const express = require('express');
-const AWS = require('aws-sdk');
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} = require('@aws-sdk/client-s3');
+const {
+  DynamoDBClient,
+  ScanCommand,
+  PutCommand,
+  GetCommand,
+} = require('@aws-sdk/client-dynamodb');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const cors = require('cors');
 const ejs = require('ejs');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const app = express();
 app.use(cors());
 
-AWS.config.update({
-  region: 'ap-northeast-1',
-});
-
-const s3 = new AWS.S3();
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const s3Client = new S3Client({ region: 'ap-northeast-1' });
+const dynamoDBClient = new DynamoDBClient({ region: 'ap-northeast-1' });
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -20,7 +27,7 @@ app.use(express.static('public'));
 // S3 upload configuration
 const upload = multer({
   storage: multerS3({
-    s3: s3,
+    s3: s3Client,
     bucket: 'cloud-internship-project3-s3',
     metadata: (req, file, cb) => cb(null, { fieldName: file.fieldname }),
     key: (req, file, cb) => cb(null, file.originalname),
@@ -38,7 +45,7 @@ app.get('/', async (req, res) => {
   };
 
   try {
-    const data = await dynamoDB.scan(params).promise();
+    const data = await dynamoDBClient.send(new ScanCommand(params));
     res.render('index', { files: data.Items });
   } catch (error) {
     res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
@@ -60,7 +67,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   };
 
   try {
-    await dynamoDB.put(params).promise();
+    await dynamoDBClient.send(new PutCommand(params));
     res.send(`File uploaded successfully! URL: ${req.file.location}`);
   } catch (error) {
     console.error('Error saving to DynamoDB:', error);
@@ -68,21 +75,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// // List files
-// app.get('/files', async (req, res) => {
-//   const params = {
-//     TableName: 'S3MetadataTable',
-//   };
-
-//   try {
-//     const data = await dynamoDB.scan(params).promise();
-//     res.render('index', { files: data.Items });
-//   } catch (error) {
-//     res.status(500).send(`Error retrieving from DynamoDB: ${error.message}`);
-//   }
-// });
-
-// Serve the file content
 app.get('/files/:filename', async (req, res) => {
   const filename = req.params.filename;
 
@@ -90,12 +82,12 @@ app.get('/files/:filename', async (req, res) => {
   const params = {
     TableName: 'S3MetadataTable',
     Key: {
-      key: filename,
+      key: { S: filename },
     },
   };
 
   try {
-    const data = await dynamoDB.get(params).promise();
+    const data = await dynamoDBClient.send(new GetCommand(params));
 
     if (!data.Item) {
       return res.status(404).send('File not found in DynamoDB');
@@ -103,27 +95,24 @@ app.get('/files/:filename', async (req, res) => {
     console.log(data.Item);
 
     // Extract S3 key from DynamoDB data
-    const s3Key = data.Item.key;
+    const s3Key = data.Item.key.S;
 
     // Get the file from S3
     const s3Params = {
       Bucket: 'cloud-internship-project3-s3',
       Key: s3Key,
-      ResponseContentDisposition: 'inline', // Change content disposition to inline
     };
 
-    s3.getObject(s3Params, (err, data) => {
-      if (err) {
-        console.error('Error fetching file from S3:', err);
-        return res
-          .status(500)
-          .send(`Error fetching file from S3: ${err.message}`);
-      }
-
-      // Set content type based on the file type
-      res.setHeader('Content-Type', data.ContentType);
-      res.send(data.Body);
-    });
+    try {
+      const command = new GetObjectCommand(s3Params);
+      const signedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600,
+      }); // URL expiration time in seconds
+      res.redirect(signedUrl); // Redirect to S3 URL
+    } catch (err) {
+      console.error('Error fetching file from S3:', err);
+      res.status(500).send(`Error fetching file from S3: ${err.message}`);
+    }
   } catch (error) {
     console.error('Error fetching file information:', error);
     res.status(500).send(`Error fetching file information: ${error.message}`);
